@@ -1,0 +1,34 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Paraveda CRM — ملفات «السيرفر» (داتا حيّة + سجلات + باكابات) ما كتدخلش Git.
+# كيبقاو فالمشروع على القرص، وأصلهم كاين حتى فـ paravidaaaa.zip.
+# ════════════════════════════════════════════════════════════════════════════
+
+# داتا الزبناء / النسخ الاحتياطية
+crm_data.json
+crm_data.json.backup
+backups/
+legacy/public_html-2026-10-30/crm_data.json
+legacy/public_html-2026-10-30/backups/
+legacy/public_html-2026-10-30/*.log
+
+# سجلات وأقفال وحالة الجري
+*.log
+*.lock
+*.stamp
+.crm.*
+.dl-*
+*.done
+.dl-auto-state.json
+dl-diag.json
+digylog_cfg.json
+audit.log.1
+journal.log.1
+
+# نسخة قديمة ديال public_html (موجودة على القرص للاسترجاع فقط، ما كترفعش)
+# نخليوها فالـ workspace ولكن ما كتتمش فالـ git باش ما يتخلطش الكود القديم بالجديد.
+legacy/
+
+# أدوات/اختبارات محلية
+node_modules/
+tools/preview-data.json
+.DS_Store
