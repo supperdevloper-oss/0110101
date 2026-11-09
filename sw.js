@@ -1,10 +1,10 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   Paraveda CRM — Service Worker (v3.105)
+   Paraveda CRM — Service Worker (v3.106)
    المسؤولية: إشعارات الطلبيات الجداد فقط.
    ⚠️ ما كنخزّنو حتى صفحة ولا نتيجة api.php فـ CacheStorage: أي كاش قديم
       كان كيرجّع نسخة قديمة ديال index.html/DATA للهاتف → «كتبناها وتمسحات».
    ══════════════════════════════════════════════════════════════════════════ */
-const PV_SW_VERSION = 'paraveda-v105';
+const PV_SW_VERSION = 'paraveda-v106';
 
 self.addEventListener('install', () => self.skipWaiting());
 

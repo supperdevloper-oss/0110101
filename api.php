@@ -3,7 +3,7 @@
  * Paraveda CRM — api.php (v3.82)
  *
  * ╔══════════════════════════════════════════════════════════════════════╗
- * ║ v3.105 — إصلاح «أي حاجة كنكتبوها فالهاتف كتمسح بوحدها»              ║
+ * ║ v3.106 — إصلاح «أي حاجة كنكتبوها فالهاتف كتمسح بوحدها»              ║
  * ║  • وقت السيرفر هو المرجع (X-CRM-Time + ct) → ساعة الهاتف ما كتخسرش  ║
  * ║    التعديل لا فـ merge الصفوف ولا فـ merge الليستات.                  ║
  * ║  • POST بـ delta=1 : المتصفح كيصيفط غير الصفوف المبدّلة (~2 كيلو)   ║
@@ -55,12 +55,24 @@ header('Pragma: no-cache');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type, X-Sync-Token, If-None-Match');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Expose-Headers: X-CRM-Time, ETag');
-/* v3.105: ساعة السيرفر كترجع فكل جواب باش الهاتف (ساعتو غالطة ولا لا)
+header('Access-Control-Expose-Headers: X-CRM-Time, X-CRM-Date, ETag');
+/* v3.106: ساعة السيرفر كترجع فكل جواب باش الهاتف (ساعتو غالطة ولا لا)
    يقدر يصحّح الـ t و _u/_f ديالو. */
 function crm_now_ms() { return (int)round(microtime(true) * 1000); }
-function crm_time_header() { if (!headers_sent()) header('X-CRM-Time: ' . crm_now_ms()); }
+/* v3.106: تاريخ العمل (الدار البيضاء) كيخرج مع كل جواب. الهاتف اللي تاريخو
+   غالط ولا فمنطقة زمنية أخرى كياخد «اليوم» من السيرفر، ماشي من ساعتو. */
+function crm_business_date() {
+  try { return (new DateTime('now', new DateTimeZone('Africa/Casablanca')))->format('Y-m-d'); }
+  catch (Throwable $e) { return gmdate('Y-m-d'); }
+}
+function crm_time_header() {
+  if (!headers_sent()) {
+    header('X-CRM-Time: ' . crm_now_ms());
+    header('X-CRM-Date: ' . crm_business_date());
+  }
+}
 header('X-CRM-Time: ' . crm_now_ms());
+header('X-CRM-Date: ' . crm_business_date());
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') { exit; }
 
 /* ---------- config ---------- */
@@ -69,7 +81,7 @@ $SECRET = '8c907fc0f4ffe0b9775a6b7c3c0fc7700e5724c0d78343df';
 /* ---------- نسخة السيرفر ----------
  * كنرجعوها فـ export=version وفـ جواب digylog_sync، باش نعرفو بالضبط
  * أشمن api.php خدام دابا فـ production (ufiq le déploiement ma bditch). */
-define('CRM_API_VERSION', '3.105');
+define('CRM_API_VERSION', '3.106');
 /* جيل المرسل: ملي كيتبدل الكود، كل الطلبيات لي سبقت كتجرب من جديد.
  * (ماشي كيبقاوش محبوسة بـ 20 محاولة قديمة ولا بـ backoff طويل.) */
 define('CRM_DL_SENDER_GEN', 4);
@@ -344,7 +356,7 @@ function crm_backup() {
 // when the incoming row carries a STRICTLY NEWER per-field stamp (_f.date*). A whole-row
 // write from an old/stale browser (no _f, or older _f) can never move a date anymore —
 // the stored value always wins. This is the server side of "التاريخ ما كيتبدلش بوحدو".
-/* v3.105 — تصحيح ساعة الجهاز.
+/* v3.106 — تصحيح ساعة الجهاز.
  * كاين phones كيكونو متأخرين بساعات: كيصيفطو _u/_f قدام → crm_merge_row
  * كيخلي النسخة القديمة ديال السيرفر تربح → التعديل كيتمسح بوحدو من بعد
  * ثواني (poll). كنزيدو نفس الفارق (serverNow - clientNow) على كل طابع
@@ -2894,7 +2906,7 @@ if ($m === 'POST') {
     crm_out(array('ok'=>true, 'noop'=>'backup_deprecated', 't'=>(int)(microtime(true) * 1000)));
   }
 
-  /* ═══ v3.105 — وقت السيرفر هو المرجع + كتابة بـ «الدلتا» ═══
+  /* ═══ v3.106 — وقت السيرفر هو المرجع + كتابة بـ «الدلتا» ═══
    * قبل: المتصفح كان كيصيفط t=Date.now() و api.php كيخزّنو. هاتف ساعتو
    * متأخرة → t < prevT → stale / crm_merge_list كيرفض التعديل؛ وهاتف
    * ساعتو متقدمة → t كيقفز للمستقبل وكل الأجهزة كيتجمّدو. دابا كنستعملو
@@ -2946,9 +2958,9 @@ if ($m === 'POST') {
   // قبل ما ناخدو القفل. الجوج القرايات ديال فوق كيتشاركو نفس الـ cache.
   $data = crm_read_raw(true);
   $prevT = isset($data[$k]['t']) ? (int)$data[$k]['t'] : 0;
-  $t = max($prevT, $now);   // v3.105: عمرُو ما كيرجع للور، عمرُو ما كيقفز للمستقبل
+  $t = max($prevT, $now);   // v3.106: عمرُو ما كيرجع للور، عمرُو ما كيقفز للمستقبل
 
-  /* v3.105: «الدلتا» = المتصفح صيفط غير الصفوف المبدّلة (بضعة كيلو
+  /* v3.106: «الدلتا» = المتصفح صيفط غير الصفوف المبدّلة (بضعة كيلو
    * عوض 2.5MB). كنمدوجوها مع المخزون هنا، تحت القفل، قبل أي مقارنة. */
   if ($IS_DELTA) {
     $__stored = (isset($data[$k]['d']) && is_array($data[$k]['d'])) ? crm_unwrap($data[$k]['d']) : array();
@@ -2973,7 +2985,7 @@ if ($m === 'POST') {
   }
 
   $__NOMERGE = array('paraveda_orders_v5','paraveda_chat_v1','paraveda_users_v1','paraveda_agent_names_v1','paraveda_villes_v2','paraveda_worktimes_v1','paraveda_remarques_v1','paraveda_avances_v1','paraveda_adspend_v1','paraveda_perfrows_v1','paraveda_livraison_v1','paraveda_history_v1','paraveda_catalog_v1','tabs_list_v1','sheet_pièce');
-  /* v3.105: حيدنا رفض «stale» — كان كيمسح تعديلات الهاتف لي ساعتو متأخرة.
+  /* v3.106: حيدنا رفض «stale» — كان كيمسح تعديلات الهاتف لي ساعتو متأخرة.
      دابا t ديما وقت السيرفر، إذن ما كاين حتى write قديم. */
   $prevJson = isset($data[$k]['d']) ? json_encode($data[$k]['d'], JSON_UNESCAPED_UNICODE) : null;
   $newJson  = json_encode($d, JSON_UNESCAPED_UNICODE);

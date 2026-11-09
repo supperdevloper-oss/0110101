@@ -14,9 +14,9 @@
   var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   var IOS_MSG = 'على آيفون: الإشعارات كتخدم غير من الشاشة الرئيسية.\n\n1) فـSafari كليكي على زر Partager (⬆️)\n2) ختار Sur l\'écran d\'accueil (زيد للشاشة الرئيسية)\n3) حل CRM من الأيقونة الجديدة';
   var reg = null;
-  /* v3.105: نسخة موسومة + updateViaCache:'none' → الهاتف كيجيب أحدث sw.js
+  /* v3.106: نسخة موسومة + updateViaCache:'none' → الهاتف كيجيب أحدث sw.js
      ديما (قبل كان كيتكاشا عام كامل بـ immutable، والكود القديم كيبقى). */
-  if (supported) navigator.serviceWorker.register('sw.js?v=105', { updateViaCache: 'none' })
+  if (supported) navigator.serviceWorker.register('sw.js?v=106', { updateViaCache: 'none' })
     .then(function (r) { reg = r; })
     .catch(function () {});
 

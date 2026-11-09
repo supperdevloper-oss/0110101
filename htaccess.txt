@@ -1,0 +1,79 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Paraveda CRM — v3.106 (أداء + حماية + «ما كيبقاش كاش قديم فالهاتف»)
+# ────────────────────────────────────────────────────────────────────────────
+# التغيير ديال v3.106: قبل كانوا .js و .css كيتخزنو "immutable" عام كامل.
+# الهاتف كان كيحتافظ بـ index/push/sw قديم حتى بعد ما ترفع النسخة الجديدة،
+# فكان كيصيفط داتا قديمة وكيمسح التغييرات. دابا كيتحقق ديما بـ ETag (304
+# رخيص) و api.php و sw.js ما كيتكاشاوش نهائياً.
+# الداتا ديال CRM (localStorage) ما كتمسحش من هنا — غير كاش الشبكة.
+# ════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# 1) حماية الملفات الحساسة
+# ─────────────────────────────────────────────────────────────
+<FilesMatch "^(crm_data\.json|crm_data\.json\.backup|digylog_cfg\.json|dl-diag\.json|audit\.log|audit\.log\.1|journal\.log|journal\.log\.1|\.crm\.lock|\.crm\.etag|INSTALL\.txt|push_keys\.json|push_subs\.json|\.dl\.lock|\.dl-send-auto\.lock|\.dl-send-auto\.stamp|\.dl-auto-state\.json|\.dl-stores-cache\.json|\.dl-networks-cache\.json|\.dl-dash-cache\.json|.*\.tmp.*|.*\.zip|.*\.lock|.*\.stamp)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "\.(log|md|zip)$">
+  Require all denied
+</FilesMatch>
+
+# مجلد النسخ الاحتياطية + نسخة قديمة ديال public_html + أدوات التطوير
+RedirectMatch 404 ^/(backups|legacy|tests|tools|crm-paraveda-data)/
+RedirectMatch 404 ^/public_html/
+
+# Digylog Chat removed permanently.
+Redirect gone /digylog-chat.html
+
+# أدوات إدارية كانت مكشوفة للعموم بلا كلمة سر
+<FilesMatch "^(import\.php|manual_sync\.php|recover\.php|dino\.html)$">
+  Require all denied
+</FilesMatch>
+
+Options -Indexes
+
+# ─────────────────────────────────────────────────────────────
+# 2) الضغط
+# ─────────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/xml image/svg+xml
+</IfModule>
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# ─────────────────────────────────────────────────────────────
+# 3) الكاش — v3.106
+# ─────────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  # api.php: داتا حيّة، عمرها ما تدخل الكاش (PHP كيتكلف بـ ETag/304)
+  <FilesMatch "^api\.php$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header always set Access-Control-Expose-Headers "X-CRM-Time, X-CRM-Date, ETag"
+  </FilesMatch>
+  # Service Worker + سكريبتات التطبيق: كيتحققو ديما (304 إلا ما تبدلو)
+  <FilesMatch "\.(js|wasm)$">
+    Header set Cache-Control "no-cache, must-revalidate, max-age=0"
+  </FilesMatch>
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(html|css|json)$">
+    Header set Cache-Control "no-cache, must-revalidate, max-age=0"
+  </FilesMatch>
+  # الصور (أسماء ثابتة) ما كيتبدلوش بزاف
+  <FilesMatch "\.(png|jpg|jpeg|svg|ico|woff2?)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ETag خاصو يبقى مفعّل — هو أساس الـ 304 (ما كيحمّلش الملف إلا تبدّل)
+<IfModule mod_headers.c>
+  FileETag MTime Size
+</IfModule>
