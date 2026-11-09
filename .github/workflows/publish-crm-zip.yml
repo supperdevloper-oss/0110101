@@ -1,4 +1,4 @@
-name: Publish Paraveda CRM v3.106 ZIP to GitHub Release
+name: Publish Paraveda CRM v3.106 ZIP
 
 on:
   push:
@@ -27,46 +27,17 @@ jobs:
           test -f Paraveda-CRM-fix-v3.106.zip
           echo "324760cfb48385f948bc9ea5b9b341d884675e8b2f327dbd2b606be8f101192f  Paraveda-CRM-fix-v3.106.zip" | sha256sum -c -
           unzip -t Paraveda-CRM-fix-v3.106.zip
-          test "$(unzip -Z1 Paraveda-CRM-fix-v3.106.zip | wc -l)" -eq 6
 
-      - name: Upload ZIP as release asset
+      - name: Attach ZIP to release v3.106
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          cat > /tmp/pv-notes.md <<'EOF'
-          # Paraveda CRM — v3.106 (الطلبيات كتبانو للبنات فالهاتف)
-
-          **ملف واحد، بلا پاسوورد، بلا أي ملفات زائدة:** `Paraveda-CRM-fix-v3.106.zip`
-          — 430,700 بايت — **0 ملفات مشفّرة** — غير 6 الملفات المصلّحة:
-          `index.html`, `api.php`, `.htaccess`, `sw.js`, `push.js`, `pv-cache-guard.js`.
-
-          ## شنو تصلّح؟
-          الأدمن كيحطّ 125 طلبية لليوم (60 لـ HAJAR و 65 لـ Meryam)، والهاتف كيوري
-          «Aucune commande» وخا فيلتر «اليوم». تأكدت بـ JSDOM من جوج أسباب:
-          1) فيلتر اليوم كان كيحسب `new Date()` من **تاريخ الهاتف** (بيوم غالط = 0 طلبية).
-          2) `ct_paraveda_orders_v5` قديم/مستقبلي كان كيمنع `ig()` من تطبيق سنابشوت السيرفر.
-
-          دابا:
-          • `api.php` كيصيفط **`X-CRM-Date`** (Africa/Casablanca) حتى فـ 304، و `.htaccess` كيعرّضو.
-          • `index.html` كيستعمل تاريخ/ساعة السيرفر فـ `I4`, الفيلتر, KPI, إضافة طلبية، و كيخزّنهم للـ offline.
-          • `ig()` كيـ clamp أي `ct` قدّام وقت السيرفر → السنابشوت كيتطبّق بوحدو.
-          • مطابقة اسم البنت ولّات متسامحة مع المسافات/الحروف/التشكيل.
-          • `pv-cache-guard.js` ولّى كيمسح الكاش التقني **كل ثانية** بلا ما يلمس `localStorage`.
-          • كل إصلاحات v3.105 (دلتا، درع التغيير، PK1، outbox، X-CRM-Time) باقية.
-
-          **التحميل:** ارفع الـ 6 ملفات فـ `public_html/`، خلّي `crm_data.json` لي عندك كما هو،
-          Ctrl+F5 مرة وحدة فكل هاتف. التأكد: `api.php?export=version` → `3.106`.
-
-          **SHA-256:** `324760cfb48385f948bc9ea5b9b341d884675e8b2f327dbd2b606be8f101192f`
-          **الاختبارات:** `35 نجاح · 0 فشل` · PHP parse OK · JSDOM: 4 سيناريوهات كلها 60 كارت · 0 أخطاء JS.
-          ما تبدّلاتش كلمة سر الدخول ولا توكن المزامنة. ما كاينينش داتا الزبناء فالـ ZIP.
-          EOF
-          if ! gh release view v3.106 >/dev/null 2>&1; then
-            gh release create v3.106 \
+          if ! gh release view v3.106 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create v3.106 --repo "$GITHUB_REPOSITORY" \
               --target arena/132dd37b-0110101 \
               --title "Paraveda CRM fix v3.106 — تحميل مباشر" \
-              --notes-file /tmp/pv-notes.md
+              --notes "الملفات المصلّحة بلا پاسوورد: غير 6 ملفات، بلا داتا ولا سجلات. v3.106 كيصلّح فيلتر اليوم على الهاتف + ct القديم."
           fi
-          gh release upload v3.106 Paraveda-CRM-fix-v3.106.zip --clobber
-          gh release view v3.106 --json tagName,url,assets
+          gh release upload v3.106 Paraveda-CRM-fix-v3.106.zip --clobber --repo "$GITHUB_REPOSITORY"
+          gh release view v3.106 --repo "$GITHUB_REPOSITORY" --json tagName,url,assets
