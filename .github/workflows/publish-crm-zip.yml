@@ -1,0 +1,43 @@
+name: Publish Paraveda CRM ZIP to GitHub Release
+
+on:
+  push:
+    branches:
+      - arena/132dd37b-0110101
+    paths:
+      - .github/workflows/publish-crm-zip.yml
+      - Paraveda-CRM-fix-v3.105.zip
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: arena/132dd37b-0110101
+
+      - name: Verify the ZIP before publishing
+        run: |
+          set -e
+          test -f Paraveda-CRM-fix-v3.105.zip
+          echo "5c63d4ff533e2cc903c539c5b2e230c79dae5e553e8819413424874fffefe0ba  Paraveda-CRM-fix-v3.105.zip" | sha256sum -c -
+          unzip -t Paraveda-CRM-fix-v3.105.zip
+
+      - name: Upload ZIP as release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if ! gh release view v3.105 >/dev/null 2>&1; then
+            gh release create v3.105 \
+              --target arena/132dd37b-0110101 \
+              --title "Paraveda CRM fix v3.105 — تحميل مباشر" \
+              --notes "الملف المصلّح بلا پاسوورد: غير 6 ملفات، بلا داتا ولا سجلات."
+          fi
+          gh release upload v3.105 Paraveda-CRM-fix-v3.105.zip --clobber
+          gh release view v3.105 --json tagName,url,assets
