@@ -1,0 +1,11 @@
+.modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(12, 16, 28, .62); }
+.annotation-modal { width: min(100%, 980px); max-height: min(94vh, 880px); display: flex; flex-direction: column; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); box-shadow: 0 20px 70px rgba(0,0,0,.24); }
+.annotation-modal > header, .annotation-modal > footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.annotation-modal > header h2 { margin: 0; font-size: 18px; }
+.annotation-modal > header p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.annotation-canvas-wrap { min-height: 220px; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--panel-2); }
+.annotation-canvas-wrap canvas { width: 100%; height: auto; max-height: 68vh; display: block; object-fit: contain; touch-action: none; cursor: crosshair; }
+.annotation-modal > footer { justify-content: flex-end; padding-top: 4px; }
+.text-link-button:disabled { opacity: .45; cursor: not-allowed; }
+.credit-icon { display: inline-flex; align-items: center; }
+@media (max-width: 640px) { .modal-backdrop { padding: 10px; } .annotation-modal { padding: 12px; } .annotation-canvas-wrap { min-height: 170px; } .annotation-canvas-wrap canvas { max-height: 52vh; } }
