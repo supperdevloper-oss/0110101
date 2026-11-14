@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { SiteLayout } from './components/SiteChrome.jsx';
 import {
@@ -6,10 +6,17 @@ import {
   InspirationImagePage, InspirationPage, LegalPage, LoginPage, NotFoundPage, PricingPage,
   ToolsIndexPage, TutorialDetailPage, TutorialsPage,
 } from './pages/ContentPages.jsx';
-import {
-  AIImageGeneratorTool, BatchImagePromptTool, ImageDescriberTool, ImagePromptTool,
-  ImageToImageTool, ImageToVideoPromptTool, MagicEnhanceTool, VideoPromptGeneratorTool, VideoToPromptTool,
-} from './pages/ToolPages.jsx';
+// Keep the large tool workspace out of the initial home-page JavaScript.
+const lazyToolPage = (name) => lazy(() => import('./pages/ToolPages.jsx').then((pages) => ({ default: pages[name] })));
+const AIImageGeneratorTool = lazyToolPage('AIImageGeneratorTool');
+const BatchImagePromptTool = lazyToolPage('BatchImagePromptTool');
+const ImageDescriberTool = lazyToolPage('ImageDescriberTool');
+const ImagePromptTool = lazyToolPage('ImagePromptTool');
+const ImageToImageTool = lazyToolPage('ImageToImageTool');
+const ImageToVideoPromptTool = lazyToolPage('ImageToVideoPromptTool');
+const MagicEnhanceTool = lazyToolPage('MagicEnhanceTool');
+const VideoPromptGeneratorTool = lazyToolPage('VideoPromptGeneratorTool');
+const VideoToPromptTool = lazyToolPage('VideoToPromptTool');
 
 function RouteEffects() {
   const location = useLocation();
@@ -51,36 +58,38 @@ export default function App() {
 
   return <SiteLayout theme={theme} setTheme={setTheme} language={language} setLanguage={setLanguage} user={user}>
     <RouteEffects />
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/tools" element={<ToolsIndexPage />} />
-      <Route path="/image-to-prompt" element={<ImagePromptTool user={user} />} />
-      <Route path="/batch-image-to-prompt" element={<BatchImagePromptTool user={user} />} />
-      <Route path="/image-prompt-generator" element={<MagicEnhanceTool />} />
-      <Route path="/describe-image" element={<ImageDescriberTool user={user} />} />
-      <Route path="/batch-ai-image-describer" element={<ImageDescriberTool batch user={user} />} />
-      <Route path="/ai-image-generator" element={<AIImageGeneratorTool />} />
-      <Route path="/image-to-image" element={<ImageToImageTool />} />
-      <Route path="/video-prompt-generator" element={<VideoPromptGeneratorTool />} />
-      <Route path="/image-to-video-prompt" element={<ImageToVideoPromptTool />} />
-      <Route path="/video-to-prompt" element={<VideoToPromptTool />} />
-      <Route path="/inspiration" element={<InspirationPage />} />
-      <Route path="/inspiration/image/:id" element={<InspirationImagePage />} />
-      <Route path="/inspiration/:category/:slug" element={<InspirationDetailPage />} />
-      <Route path="/inspiration/:category" element={<InspirationPage />} />
-      <Route path="/tutorials" element={<TutorialsPage />} />
-      <Route path="/tutorials/:slug" element={<TutorialDetailPage />} />
-      <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/contact-us" element={<ContactPage />} />
-      <Route path="/about-us" element={<AboutPage />} />
-      <Route path="/developer/api" element={<ApiPage />} />
-      <Route path="/affiliate-program" element={<AffiliatePage />} />
-      <Route path="/auth/login" element={<LoginPage />} />
-      <Route path="/account/subscription" element={<AccountPage user={authReady ? user : null} />} />
-      <Route path="/legal/privacy-policy" element={<LegalPage kind="privacy" />} />
-      <Route path="/legal/terms" element={<LegalPage kind="terms" />} />
-      <Route path="/legal/refund-policy" element={<LegalPage kind="refund" />} />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <Suspense fallback={null}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/tools" element={<ToolsIndexPage />} />
+        <Route path="/image-to-prompt" element={<ImagePromptTool user={user} />} />
+        <Route path="/batch-image-to-prompt" element={<BatchImagePromptTool user={user} />} />
+        <Route path="/image-prompt-generator" element={<MagicEnhanceTool />} />
+        <Route path="/describe-image" element={<ImageDescriberTool user={user} />} />
+        <Route path="/batch-ai-image-describer" element={<ImageDescriberTool batch user={user} />} />
+        <Route path="/ai-image-generator" element={<AIImageGeneratorTool />} />
+        <Route path="/image-to-image" element={<ImageToImageTool />} />
+        <Route path="/video-prompt-generator" element={<VideoPromptGeneratorTool />} />
+        <Route path="/image-to-video-prompt" element={<ImageToVideoPromptTool />} />
+        <Route path="/video-to-prompt" element={<VideoToPromptTool />} />
+        <Route path="/inspiration" element={<InspirationPage />} />
+        <Route path="/inspiration/image/:id" element={<InspirationImagePage />} />
+        <Route path="/inspiration/:category/:slug" element={<InspirationDetailPage />} />
+        <Route path="/inspiration/:category" element={<InspirationPage />} />
+        <Route path="/tutorials" element={<TutorialsPage />} />
+        <Route path="/tutorials/:slug" element={<TutorialDetailPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/contact-us" element={<ContactPage />} />
+        <Route path="/about-us" element={<AboutPage />} />
+        <Route path="/developer/api" element={<ApiPage />} />
+        <Route path="/affiliate-program" element={<AffiliatePage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/account/subscription" element={<AccountPage user={authReady ? user : null} />} />
+        <Route path="/legal/privacy-policy" element={<LegalPage kind="privacy" />} />
+        <Route path="/legal/terms" element={<LegalPage kind="terms" />} />
+        <Route path="/legal/refund-policy" element={<LegalPage kind="refund" />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Suspense>
   </SiteLayout>;
 }

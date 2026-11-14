@@ -1,0 +1,9 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "ImagePromptify",
+    "identifier": "imagepromptify.xyz",
+    "documentationUrl": "https://imagepromptify.xyz/developer/api"
+  },
+  "entries": []
+}

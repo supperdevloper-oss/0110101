@@ -415,8 +415,29 @@ app.post('/api/feedback', contactUpload.array('screenshots', 3), asyncRoute(asyn
 
 const dist = path.resolve(__dirname, '../dist');
 if (isProduction && fs.existsSync(dist)) {
-  app.use(express.static(dist));
-  app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+  // Express static middleware intentionally ignores dotfiles, so serve the
+  // well-known AI catalog explicitly instead of falling through to index.html.
+  app.get('/.well-known/ai-catalog.json', (_req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.type('application/ai-catalog+json');
+    res.sendFile(path.join(dist, '.well-known', 'ai-catalog.json'));
+  });
+  app.use(express.static(dist, {
+    setHeaders(res, filePath) {
+      if (filePath === path.join(dist, 'index.html')) {
+        res.setHeader('Cache-Control', 'no-cache, max-age=0, must-revalidate');
+      } else if (filePath.startsWith(`${path.join(dist, 'assets')}${path.sep}`)) {
+        // Vite filenames are content-hashed, so long-lived immutable caching is safe.
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (['robots.txt', 'llms.txt'].includes(path.basename(filePath))) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      }
+    },
+  }));
+  app.get('*', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, max-age=0, must-revalidate');
+    res.sendFile(path.join(dist, 'index.html'));
+  });
 }
 
 app.use((error, _req, res, _next) => {

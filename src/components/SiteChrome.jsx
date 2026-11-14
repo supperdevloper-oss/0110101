@@ -79,6 +79,7 @@ export function SiteHeader({ theme, setTheme, language, setLanguage, user }) {
 
 export function SiteFooter() {
   return <footer className="site-footer">
+    <h2 className="visually-hidden">Site information</h2>
     <div className="footer-inner">
       <div className="footer-brand-col">
         <Brand />

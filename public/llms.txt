@@ -1,0 +1,19 @@
+# ImagePromptify
+
+> ImagePromptify provides tools for turning images into AI prompts, describing images, generating images, and creating video prompts.
+
+## Main pages
+- [Home](https://imagepromptify.xyz/): Overview of the ImagePromptify tools.
+- [Image to Prompt](https://imagepromptify.xyz/image-to-prompt): Create a descriptive prompt from an image.
+- [AI Image Describer](https://imagepromptify.xyz/describe-image): Analyze and describe an image.
+- [AI Image Generator](https://imagepromptify.xyz/ai-image-generator): Generate an image from a text prompt.
+- [Image to Image](https://imagepromptify.xyz/image-to-image): Create image variations from a reference image.
+- [Video Prompt Generator](https://imagepromptify.xyz/video-prompt-generator): Turn an idea into a video prompt.
+- [Video to Prompt](https://imagepromptify.xyz/video-to-prompt): Analyze an uploaded video and produce a structured prompt.
+
+## Information
+- [Pricing](https://imagepromptify.xyz/pricing)
+- [Tutorials](https://imagepromptify.xyz/tutorials)
+- [Privacy Policy](https://imagepromptify.xyz/legal/privacy-policy)
+- [Terms](https://imagepromptify.xyz/legal/terms)
+- [Contact](https://imagepromptify.xyz/contact-us)

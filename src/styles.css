@@ -5,7 +5,7 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --ink: #101322;
-  --muted: #7c8494;
+  --muted: #626b7b;
   --muted-dark: #586579;
   --purple: #8200f7;
   --purple-deep: #7000e8;
@@ -44,6 +44,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button { color: inherit; }
 a { color: inherit; text-decoration: none; }
 img, video { display: block; max-width: 100%; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .app-shell { min-height: 100vh; background: var(--surface); color: var(--ink); overflow: clip; }
 .section-wrap { width: min(100% - 64px, 1280px); margin-inline: auto; }
 

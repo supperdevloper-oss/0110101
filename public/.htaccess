@@ -1,0 +1,64 @@
+Options -Indexes
+DirectoryIndex index.html
+
+# Strongly cache Vite's content-hashed static files, but always revalidate the
+# entry HTML so visitors receive the newest release after a deploy.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType application/json "access plus 1 hour"
+  ExpiresByType text/plain "access plus 1 day"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(?:css|js|mjs|woff2?|svg|png|jpe?g|webp|avif|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "^(?:robots|llms)\.txt$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+  <FilesMatch "^ai-catalog\.json$">
+    Header set Content-Type "application/ai-catalog+json"
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+  <Files "index.html">
+    Header set Cache-Control "no-cache, max-age=0, must-revalidate"
+  </Files>
+  <Files "api-auth-me.json">
+    Header set Cache-Control "public, max-age=60"
+  </Files>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/manifest+json image/svg+xml
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # The static Hostinger package has no Express runtime. Return a neutral
+  # anonymous session response instead of a failed request on initial load.
+  RewriteRule ^api/auth/me$ /api-auth-me.json [L]
+
+  # Other API endpoints require the Node.js backend and proxy configuration.
+  RewriteRule ^api(?:/|$) - [R=503,L]
+  ErrorDocument 503 "Node API backend is not connected. Deploy the Node.js app and route /api/* to it."
+
+  # Preserve missing asset errors; only application routes should fall back.
+  RewriteRule ^assets(?:/|$) - [L]
+
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.html [L]
+</IfModule>

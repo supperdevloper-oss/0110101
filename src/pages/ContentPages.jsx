@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRight, AtSign, Check, Copy, Image as ImageIcon, Languages, Layers, LoaderCircle, Mail, Palette, Pencil, ScanEye, Sparkles, Upload, Video } from 'lucide-react';
 import { FAQList, PageHeading, SectionHeading } from '../components/SiteChrome.jsx';
+import DeferredImage from '../components/DeferredImage.jsx';
 import { homeFaqs, homeToolCards, imagePacks, inspirationExamples, inspirations, pricingPlans, promptPack, tools, tutorials } from '../data.js';
 import { copyText, postJson } from '../lib/api.js';
 
@@ -26,7 +27,7 @@ function ToolCard({ tool, variant = '' }) {
 
 function InspirationCard({ item }) {
   return <Link to={`/inspiration/${item.category}/${item.slug}`} className="inspiration-card">
-    <img src={item.image} alt={item.title} loading="lazy" />
+    <DeferredImage src={item.image} alt={item.title} />
     <span>{item.title}</span>
   </Link>;
 }
@@ -38,6 +39,7 @@ export function HomePage() {
         <h1>Create Better AI Art<br />with <span>Image Prompt</span></h1>
         <p>Inspire ideas, Enhance image prompt, Create masterpieces</p>
         <div className="hero-actions"><Link to="/image-to-prompt" className="button button-primary">Try it now !</Link><Link to="/tutorials" className="button button-outline">Tutorials</Link></div>
+        <h2 className="visually-hidden">Featured AI tools</h2>
         <div className="home-feature-cards">{homeToolCards.map((tool) => <ToolCard key={tool.title} tool={tool} />)}</div>
         <div className="related-links"><span>You may be interested in:</span><Link to="/tutorials/what-is-an-image-prompt">What is an Image Prompt?</Link><Link to="/tutorials/how-to-write-effective-image-prompt">How to Write Effective Image Prompt?</Link></div>
       </div>
@@ -90,7 +92,7 @@ export function InspirationPage() {
 }
 
 function ArtExampleCard({ item }) {
-  return <Link to={`/inspiration/image/${item.id}`} className="art-example-card"><img src={item.image} alt={item.subject} loading="lazy" /></Link>;
+  return <Link to={`/inspiration/image/${item.id}`} className="art-example-card"><DeferredImage src={item.image} alt={item.subject} /></Link>;
 }
 
 export function InspirationDetailPage() {
@@ -100,7 +102,7 @@ export function InspirationDetailPage() {
   if (!item) return <NotFoundPage />;
   const copy = async () => { try { await copyText(item.prompt); setCopied(true); setTimeout(() => setCopied(false), 1200); } catch { /* permission state is left to the browser */ } };
   const examples = inspirationExamples.filter((entry) => entry.style === item.slug);
-  return <main><div className="inspiration-detail section-wrap"><PageHeading compact title={item.title} /><div className="prompt-detail-card"><img src={item.image} alt={item.title} /><div className="prompt-detail-copy"><h2>Image Prompt:</h2><p>{item.prompt}</p><div className="detail-actions"><Link className="button button-primary" to={`/ai-image-generator?tag=${item.slug}`}>GENERATE</Link><button className="button button-outline" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'COPIED' : 'COPY'}</button></div></div></div>
+  return <main><div className="inspiration-detail section-wrap"><PageHeading compact title={item.title} /><div className="prompt-detail-card"><DeferredImage src={item.image} alt={item.title} priority /><div className="prompt-detail-copy"><h2>Image Prompt:</h2><p>{item.prompt}</p><div className="detail-actions"><Link className="button button-primary" to={`/ai-image-generator?tag=${item.slug}`}>GENERATE</Link><button className="button button-outline" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'COPIED' : 'COPY'}</button></div></div></div>
     {examples.length > 0 && <section className="art-examples-section"><div className="section-title-row"><h2>{examples.length}Arts</h2></div><div className="art-examples-grid">{examples.map((example) => <ArtExampleCard key={example.id} item={example} />)}</div></section>}
     <hr /><div className="section-title-row"><h2>Explore More {categoryLabel(item.category)}</h2><Link className="text-link" to={`/inspiration/${item.category}`}>EXPLORE MORE</Link></div><div className="inspiration-grid">{inspirations.filter((entry) => entry.category === item.category && entry.slug !== item.slug).slice(0, 4).map((entry) => <InspirationCard key={entry.slug} item={entry} />)}</div></div></main>;
 }
@@ -113,7 +115,7 @@ export function InspirationImagePage() {
   const style = inspirations.find((entry) => entry.slug === item.style);
   const siblings = inspirationExamples.filter((entry) => entry.style === item.style && entry.id !== item.id);
   const copy = async () => { try { await copyText(item.prompt); setCopied(true); setTimeout(() => setCopied(false), 1200); } catch { /* browser clipboard permission is required */ } };
-  return <main><div className="individual-art-page section-wrap"><h1 className="visually-hidden">{item.subject}</h1><div className="individual-art-main"><img className="individual-art-image" src={item.image} alt={item.subject} /><section className="individual-art-copy"><h2>Image Prompt</h2><p>{item.prompt}</p><div className="detail-actions"><Link className="button button-primary" to={`/ai-image-generator?imageId=${item.id}`}>GENERATE</Link><button className="button button-outline" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'COPIED' : 'COPY'}</button></div></section></div><div className="individual-art-meta"><div className="individual-art-category"><h2>{categoryLabel(item.category)}</h2>{style && <Link to={`/inspiration/${item.category}/${style.slug}`}>{style.title}</Link>}</div><div><h2>Model</h2><strong>{item.model}</strong></div><div><h2>Image size</h2><strong>{item.size}</strong></div></div>
+  return <main><div className="individual-art-page section-wrap"><h1 className="visually-hidden">{item.subject}</h1><div className="individual-art-main"><DeferredImage className="individual-art-image" src={item.image} alt={item.subject} priority /><section className="individual-art-copy"><h2>Image Prompt</h2><p>{item.prompt}</p><div className="detail-actions"><Link className="button button-primary" to={`/ai-image-generator?imageId=${item.id}`}>GENERATE</Link><button className="button button-outline" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'COPIED' : 'COPY'}</button></div></section></div><div className="individual-art-meta"><div className="individual-art-category"><h2>{categoryLabel(item.category)}</h2>{style && <Link to={`/inspiration/${item.category}/${style.slug}`}>{style.title}</Link>}</div><div><h2>Model</h2><strong>{item.model}</strong></div><div><h2>Image size</h2><strong>{item.size}</strong></div></div>
     <section className="art-examples-section"><div className="section-title-row"><h2>Explore More of {style?.title}</h2>{style && <Link to={`/inspiration/${item.category}/${style.slug}`} className="text-link">SEE ALL</Link>}</div><div className="art-examples-grid">{siblings.map((example) => <ArtExampleCard key={example.id} item={example} />)}</div></section>
     <section className="other-styles-section"><div className="section-title-row"><h2>Other {categoryLabel(item.category)}</h2><Link to={`/inspiration/${item.category}`} className="text-link">EXPLORE MORE</Link></div><div className="inspiration-grid">{inspirations.filter((entry) => entry.category === item.category && entry.slug !== item.style).slice(0, 4).map((entry) => <InspirationCard key={entry.slug} item={entry} />)}</div></section></div></main>;
 }
@@ -131,7 +133,7 @@ function categoryLabel(slug) {
 export function TutorialsPage() {
   return <main><PageHeading title="Image Prompt Tutorials" subtitle="Learn how to make AI draw anything you imagine" />
     <div className="tutorial-list section-wrap">{tutorials.map((article) => <Link to={`/tutorials/${article.slug}`} className="tutorial-card" key={article.slug}>
-      <img src={article.image} alt={article.title} loading="lazy" /><div className="tutorial-card-body"><span className="tutorial-tag">#Tutorial</span><h2>{article.title}</h2><p>{article.excerpt}</p><div className="tutorial-meta"><img src={`${cdn}/ad_ic_img_2024-09-20_1726843272014_9942.webp`} alt="Eric White" /><span>Eric White</span><time>{article.date}</time></div></div>
+      <DeferredImage src={article.image} alt={article.title} /><div className="tutorial-card-body"><span className="tutorial-tag">#Tutorial</span><h2>{article.title}</h2><p>{article.excerpt}</p><div className="tutorial-meta"><DeferredImage src={`${cdn}/ad_ic_img_2024-09-20_1726843272014_9942.webp`} alt="Eric White" /><span>Eric White</span><time>{article.date}</time></div></div>
     </Link>)}</div>
   </main>;
 }
@@ -163,7 +165,7 @@ export function TutorialDetailPage() {
   const article = tutorials.find((item) => item.slug === slug);
   const sections = articleBodies[slug];
   if (!article) return <NotFoundPage />;
-  return <main><article className="tutorial-detail section-wrap"><Link to="/tutorials" className="back-link">← Back to Tutorials</Link><h1>{article.title}</h1><div className="article-author"><img src={`${cdn}/ad_ic_img_2024-09-20_1726843272014_9942.webp`} alt="Eric White" /><span>Eric White</span><time>{article.date}</time><span className="tutorial-tag">#Tutorial</span></div><img className="article-cover" src={article.image} alt={article.title} />
+  return <main><article className="tutorial-detail section-wrap"><Link to="/tutorials" className="back-link">← Back to Tutorials</Link><h1>{article.title}</h1><div className="article-author"><DeferredImage src={`${cdn}/ad_ic_img_2024-09-20_1726843272014_9942.webp`} alt="Eric White" priority /><span>Eric White</span><time>{article.date}</time><span className="tutorial-tag">#Tutorial</span></div><DeferredImage className="article-cover" src={article.image} alt={article.title} priority />
     {sections ? sections.map((section) => <section key={section.heading}><h2>{section.heading}</h2>{section.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</section>) : <section><p>{article.excerpt}</p><p>This tutorial introduces the topic and links it to ImagePrompt.org’s prompt tools.</p><Link className="button button-outline" to="/image-prompt-generator">Try Image Prompt Generator</Link></section>}
     <div className="article-related"><h2>Explore Image Prompt Tools</h2><Link to="/image-to-prompt">Image to Prompt</Link><Link to="/image-prompt-generator">Image Prompt Generator</Link><Link to="/ai-image-generator">AI Image Generator</Link></div></article></main>;
 }
